@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pro News Hub — Sports • Cricket • Gadgets • AI</title>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+  <!-- Simple reset + styles -->
+  <style>
+    :root{
+      --bg:#f4f6f9; --card:#ffffff; --muted:#6b7280; --accent:#0b63ff; --glass: rgba(255,255,255,0.6);
+      --radius:12px; --shadow: 0 6px 20px rgba(19,24,33,0.08);
+    }
+    [data-theme="dark"]{ --bg:#0b0f16; --card:#0f1720; --muted:#9ca3af; --accent:#3b82f6; --glass: rgba(255,255,255,0.03); }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--text,#0b1220)}
+
+    header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,var(--card),transparent);backdrop-filter: blur(6px);padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(0,0,0,0.04)}
+    .brand{font-weight:700;font-size:18px}
+    .search{flex:1}
+
+    .topbar-actions{display:flex;gap:8px}
+    button.btn{border:0;background:var(--card);padding:8px 12px;border-radius:10px;box-shadow:var(--shadow);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+    button.ghost{background:transparent;box-shadow:none;border:1px solid rgba(0,0,0,0.06)}
+
+    main{padding:18px;max-width:1100px;margin:0 auto}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+
+    /* left column feed area */
+    .panel{background:var(--card);padding:14px;border-radius:var(--radius);box-shadow:var(--shadow)}
+    .section-title{font-size:16px;font-weight:700;margin-bottom:10px}
+    .feed-list{display:grid;gap:12px}
+    .card{background:linear-gradient(180deg,transparent,transparent);padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04)}
+    .card h3{margin:0 0 6px;font-size:15px}
+    .card p{margin:0;color:var(--muted);font-size:13px}
+
+    /* floating sidebar */
+    .floating{position:fixed;right:14px;top:120px;display:flex;flex-direction:column;gap:10px;z-index:40}
+    .fab{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--card);box-shadow:var(--shadow);cursor:pointer}
+
+    /* bottom nav */
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;height:62px;background:var(--card);display:flex;justify-content:space-around;align-items:center;box-shadow:0 -6px 18px rgba(2,6,23,0.06);z-index:50}
+    .bn-item{display:flex;flex-direction:column;align-items:center;font-size:12px;color:var(--muted);gap:4px}
+
+    /* responsive */
+    @media (max-width:900px){.grid{grid-template-columns:1fr} .floating{display:none} .side-panel{display:none}}
+
+    /* animations */
+    .fade-in{animation:fade 400ms ease both}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    /* small helpers */
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;align-items:center}
+
+    /* rss loading */
+    .loader{height:6px;background:linear-gradient(90deg,#e6eefc,#f3f7ff);border-radius:8px;overflow:hidden}
+  </style>
+</head>
+<body>
+  <header id="top">
+    <div class="brand">Pro News Hub</div>
+    <div class="search">
+      <input id="q" placeholder="Search headlines (press Enter)" style="width:100%;padding:8px;border-radius:10px;border:1px solid rgba(0,0,0,0.06)" />
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" id="themeToggle" title="Toggle Dark/Light"><span class="material-icons">brightness_6</span></button>
+      <button class="btn ghost" id="refreshAll" title="Refresh feeds"><span class="material-icons">refresh</span>Refresh</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <div>
+        <div class="panel fade-in">
+          <div class="row" style="justify-content:space-between"><div class="section-title">Top Feeds</div><div class="muted">Auto-updates • RSS</div></div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0">
+            <!-- AI Tools quick buttons -->
+            <button class="btn" onclick="open('https://chat.openai.com','_blank')"><span class="material-icons">smart_toy</span>ChatGPT</button>
+            <button class="btn" onclick="open('https://claude.ai','_blank')"><span class="material-icons">memory</span>Claude</button>
+            <button class="btn" onclick="open('https://gemini.google.com','_blank')"><span class="material-icons">android</span>Gemini</button>
+            <button class="btn" onclick="open('https://perplexity.ai','_blank')"><span class="material-icons">psychology</span>Perplexity</button>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+            <!-- social -->
+            <button class="btn ghost" onclick="open('https://www.youtube.com','_blank')"><span class="material-icons">smart_display</span>YouTube</button>
+            <button class="btn ghost" onclick="open('https://www.instagram.com','_blank')"><span class="material-icons">camera_alt</span>Instagram</button>
+            <button class="btn ghost" onclick="open('https://twitter.com','_blank')"><span class="material-icons">campaign</span>X / Twitter</button>
+            <button class="btn ghost" onclick="open('https://facebook.com','_blank')"><span class="material-icons">facebook</span>Facebook</button>
+            <button class="btn ghost" onclick="open('https://reddit.com','_blank')"><span class="material-icons">forum</span>Reddit</button>
+          </div>
+
+          <div style="margin-top:14px">
+            <div class="loader" id="feedLoader" style="width:120px"></div>
+          </div>
+
+          <div id="feeds" class="feed-list" style="margin-top:12px"></div>
+        </div>
+
+        <!-- Live Cricket & Scores -->
+        <div class="panel fade-in" style="margin-top:16px">
+          <div class="section-title">Live Cricket Scores</div>
+          <div id="cricket" class="muted">Loading live matches...</div>
+        </div>
+
+        <!-- RSS Categories -->
+        <div class="panel fade-in" style="margin-top:16px">
+          <div class="section-title">RSS Categories</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+            <div class="card"><h3>News</h3><p class="muted">BBC / Times / NDTV</p></div>
+            <div class="card"><h3>Movies</h3><p class="muted">IMDb news, Film updates</p></div>
+            <div class="card"><h3>Gaming</h3><p class="muted">IGN / GameSpot</p></div>
+            <div class="card"><h3>AI</h3><p class="muted">TechCrunch AI, VentureBeat AI</p></div>
+            <div class="card"><h3>Finance</h3><p class="muted">Bloomberg / Reuters</p></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right column side panel -->
+      <aside class="side-panel">
+        <div class="panel fade-in">
+          <div class="section-title">Weather & AQI</div>
+          <div id="weatherBox">
+            <div class="muted">Loading weather…</div>
+          </div>
+        </div>
+
+        <div class="panel fade-in" style="margin-top:14px">
+          <div class="section-title">Quick RSS Subscriptions</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            <select id="rssSelect" style="padding:8px;border-radius:10px;border:1px solid rgba(0,0,0,0.06)">
+              <option value="https://feeds.bbci.co.uk/news/rss.xml">BBC News</option>
+              <option value="https://rss.cnn.com/rss/edition.rss">CNN Top Stories</option>
+              <option value="https://techcrunch.com/feed/">TechCrunch</option>
+              <option value="https://www.espncricinfo.com/ci/content/rss/feeds_rss_cricket.xml">ESPN Cricinfo</option>
+              <option value="https://www.gamespot.com/feeds/news/">GameSpot</option>
+            </select>
+            <button class="btn" id="addRss">Add Feed</button>
+          </div>
+        </div>
+
+        <div class="panel fade-in" style="margin-top:14px">
+          <div class="section-title">Settings</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            <label class="muted">AQICN Token (optional)</label>
+            <input id="aqiToken" placeholder="Paste API token for AQI (optional)" style="padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" />
+            <label class="muted">Default City</label>
+            <input id="cityInput" placeholder="Mumbai, Delhi, Kolkata..." style="padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" />
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button class="btn" id="saveSettings">Save</button>
+              <button class="btn ghost" id="resetSettings">Reset</button>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <!-- Floating AI sidebar -->
+  <div class="floating">
+    <div class="fab" title="Open ChatGPT" onclick="open('https://chat.openai.com','_blank')"><span class="material-icons">smart_toy</span></div>
+    <div class="fab" title="Claude" onclick="open('https://claude.ai','_blank')"><span class="material-icons">memory</span></div>
+    <div class="fab" title="Gemini" onclick="open('https://gemini.google.com','_blank')"><span class="material-icons">android</span></div>
+    <div class="fab" title="Perplexity" onclick="open('https://perplexity.ai','_blank')"><span class="material-icons">psychology</span></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="bn-item" onclick="scrollToSection('feeds')"><span class="material-icons">article</span><div>Feeds</div></div>
+    <div class="bn-item" onclick="scrollToSection('cricket')"><span class="material-icons">sports_cricket</span><div>Cricket</div></div>
+    <div class="bn-item" onclick="scrollToSection('weatherBox')"><span class="material-icons">cloud</span><div>Weather</div></div>
+    <div class="bn-item" onclick="scrollToSection('top')"><span class="material-icons">home</span><div>Home</div></div>
+  </div>
+
+  <!-- Script: main behaviour -->
+  <script>
+    // ---------- Configuration (edit these as needed) ----------
+    const CONFIG = {
+      rssStart: [
+        {name:'TechCrunch', url:'https://techcrunch.com/feed/'},
+        {name:'ESPN Cricinfo', url:'https://www.espncricinfo.com/ci/content/rss/feeds_rss_cricket.xml'},
+        {name:'NDTV Sports', url:'https://feeds.feedburner.com/ndtvsports'},
+        {name:'Gadgets360', url:'https://gadgets360.com/rss/feeds'},
+        {name:'BBC News', url:'https://feeds.bbci.co.uk/news/rss.xml'}
+      ],
+      rssLimitPerFeed: 6,
+      proxy: 'https://api.allorigins.win/raw?url=' // reliable CORS proxy-free
+    };
+
+    // ---------- Utility ----------
+    function e(id){return document.getElementById(id)}
+
+    // Dark mode persistence
+    const themeToggle = e('themeToggle');
+    const savedTheme = localStorage.getItem('prohub_theme');
+    if(savedTheme==='dark') document.documentElement.setAttribute('data-theme','dark');
+
+    themeToggle.addEventListener('click',()=>{
+      const now = document.documentElement.getAttribute('data-theme')==='dark' ? null : 'dark';
+      if(now) document.documentElement.setAttribute('data-theme','dark'); else document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('prohub_theme', now || 'light');
+    });
+
+    // ---------- RSS fetching & rendering ----------
+    async function fetchRSS(url){
+      try{
+        const res = await fetch(CONFIG.proxy + encodeURIComponent(url));
+        if(!res.ok) throw new Error('Network');
+        const text = await res.text();
+        const doc = new DOMParser().parseFromString(text,'text/xml');
+        return doc;
+      }catch(err){console.error('RSS fetch error',err);return null}
+    }
+
+    async function addFeed(feed){
+      const container = e('feeds');
+      const xml = await fetchRSS(feed.url);
+      if(!xml) return;
+      const items = Array.from(xml.querySelectorAll('item')).slice(0, CONFIG.rssLimitPerFeed);
+      const section = document.createElement('div');
+      section.className='panel';
+      section.innerHTML = `<div class="section-title">${feed.name}</div>`;
+      const list = document.createElement('div'); list.className='feed-list';
+      items.forEach(it=>{
+        const title = it.querySelector('title')?.textContent || 'No title';
+        const link = it.querySelector('link')?.textContent || it.querySelector('guid')?.textContent || '#';
+        const desc = (it.querySelector('description')?.textContent || '').replace(/<[^>]+>/g,'');
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `<h3>${title}</h3><p>${desc.substring(0,140)}...</p>`;
+        card.addEventListener('click', ()=> window.open(link, '_blank'));
+        list.appendChild(card);
+      });
+      section.appendChild(list);
+      container.appendChild(section);
+    }
+
+    async function loadAllFeeds(){
+      e('feeds').innerHTML='';
+      for(const f of CONFIG.rssStart){ await addFeed(f);}    }
+
+    // add RSS from selector
+    e('addRss').addEventListener('click', ()=>{
+      const url = e('rssSelect').value;
+      if(url) addFeed({name:url.split('/')[2]||'Feed', url});
+    });
+
+    // refresh
+    e('refreshAll').addEventListener('click',()=>{ loadAllFeeds(); loadCricket(); loadWeather(); });
+
+    // search enter
+    e('q').addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ const q=ev.target.value.toLowerCase(); filterFeeds(q);} });
+
+    function filterFeeds(q){
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(c=>{
+        c.style.display = c.innerText.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+
+    // ---------- Live Cricket (best-effort scraping from espncricinfo) ----------
+    async function loadCricket(){
+      const container = e('cricket');
+      container.innerHTML = 'Loading live cricket...';
+      try{
+        // fetch espncricinfo matches RSS for quick headlines
+        const xml = await fetchRSS('https://www.espncricinfo.com/ci/content/rss/feeds_rss_cricket.xml');
+        if(!xml){ container.innerHTML='Unable to load cricket feed.'; return; }
+        const items = Array.from(xml.querySelectorAll('item')).slice(0,8);
+        container.innerHTML = '';
+        items.forEach(it=>{
+          const t = it.querySelector('title')?.textContent || '';
+          const l = it.querySelector('link')?.textContent || '#';
+          const el = document.createElement('div'); el.className='card'; el.style.marginBottom='8px';
+          el.innerHTML = `<h3>${t}</h3><p class="muted">Source: ESPNcricinfo</p>`;
+          el.addEventListener('click', ()=> window.open(l,'_blank'));
+          container.appendChild(el);
+        });
+      }catch(err){console.error(err);container.innerHTML='Error loading cricket.'}
+    }
+
+    // ---------- Weather + AQI (wttr.in + optional AQICN token) ----------
+    async function loadWeather(){
+      const box = e('weatherBox'); box.innerHTML='Loading weather...';
+      const city = localStorage.getItem('prohub_city') || e('cityInput').value || '';
+      try{
+        // use wttr.in for free weather JSON
+        const cityPath = city ? encodeURIComponent(city) : 'auto';
+        const w = await fetch(`https://wttr.in/${cityPath}?format=j1`);
+        if(!w.ok) throw new Error('wttr error');
+        const js = await w.json();
+        // pick current condition
+        const curr = js.current_condition?.[0];
+        const tempC = curr?.temp_C; const desc = curr?.weatherDesc?.[0]?.value || '';
+        // AQI (optional)
+        const aqiToken = localStorage.getItem('prohub_aqi') || e('aqiToken').value.trim();
+        let aqiHtml = '<div class="muted">AQI not configured</div>';
+        if(aqiToken){
+          try{
+            // AQICN API (requires token) - user must add token in settings
+            const resp = await fetch(`https://api.waqi.info/feed/${cityPath}/?token=${aqiToken}`);
+            const ad = await resp.json();
+            if(ad.status==='ok'){
+              const a = ad.data.aqi; aqiHtml = `<div><strong>AQI:</strong> ${a} <span class="muted">(${ad.data.city.name})</span></div>`;
+            } else aqiHtml = '<div class="muted">AQI: not available</div>';
+          }catch(e){aqiHtml = '<div class="muted">AQI fetch failed</div>'}
+        }
+
+        box.innerHTML = `<div style="display:flex;align-items:center;gap:12px"><div style="font-size:28px;font-weight:700">${tempC}°C</div><div><div style="font-weight:700">${city || js.nearest_area?.[0]?.areaName?.[0]?.value || 'Your area'}</div><div class="muted">${desc}</div></div></div><div style="margin-top:8px">${aqiHtml}</div>`;
+      }catch(err){console.error(err);box.innerHTML='<div class="muted">Weather failed. Try setting default city.</div>'}
+    }
+
+    // ---------- Settings save / load ----------
+    e('saveSettings').addEventListener('click', ()=>{
+      const tok = e('aqiToken').value.trim(); const city = e('cityInput').value.trim();
+      if(tok) localStorage.setItem('prohub_aqi', tok); else localStorage.removeItem('prohub_aqi');
+      if(city) localStorage.setItem('prohub_city', city);
+      loadWeather();
+      alert('Saved');
+    });
+    e('resetSettings').addEventListener('click', ()=>{ localStorage.removeItem('prohub_aqi'); localStorage.removeItem('prohub_city'); e('aqiToken').value=''; e('cityInput').value=''; loadWeather(); alert('Reset') });
+
+    // ---------- helpers ----------
+    function scrollToSection(id){ const el = e(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}) }
+
+    // ---------- init ----------
+    (function(){ loadAllFeeds(); loadCricket(); loadWeather(); })();
+
+  </script>
+
+  <!-- Footer small note -->
+  <div style="padding:18px;max-width:1100px;margin:18px auto;color:var(--muted);font-size:13px">Tip: To enable AQI add an API token from <a href="https://aqicn.org/data-platform/token/" target="_blank">aqicn.org</a>. For full weather API replace wttr.in with OpenWeatherMap and add your API key in the code.</div>
+</body>
+</html>
